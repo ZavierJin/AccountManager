@@ -1,29 +1,7 @@
-版本号：3.0 
-修改时间：2020/6/1 儿童节专享版
-作者：张哲诚、胡江鹏
-文件结构说明：
-    1、include文件夹中存放模块的头文件
-    2、src文件夹存放各个模块的源代码
-    3、example文件夹中存放测试工程
-    4、lib中存放相关库
-设置的测试：
-    1、Request测试
-    2、Answer测试
-    3、单机发送接收发送请求
-    4、单机多线程简单交互
-    5、一个单线程程序和一个多线程程序的简单交互
-通过简单测试的内容：
-    1、Computer模块
-    2、Network模块
-    3、ConvertFunction模块
-    4、Request模块
-    5、Answer模块
-注意点：
-    1、在实际使用时需要将Request.h和Answer.h中的Date类型换成实际使用的表示时间的类型
-    2、在实际使用时需要将Answer.h中Record换成实际使用的交易记录的类型 
-    3、需要包含lib中的库
-    4、需要使用NuGet，下载boost库的头文件
-    5、正常使用时请注释掉computer.h中声明得宏SINGLE_DEBUG（如果有的话客户端发送消息时不会等待Feedback的）
-    6、使用时只需要#include "Computer.h"即可
-    7、由于未编译成静态库，因此需要包含src中所有cpp文件
-    8、默认的txt文件建立在D:/network（如果没有程序会自己创建），如果不能、不方便建立的，请到NetworkImpl.h中查找network_root变量，并修改
+版本号：1.0 
+修改时间：2020/6/3
+尝试整合Raft组代码，完成单进程对象创建和首发消息。
+但是在多进程时存在较大问题，主要有以下两个：
+1. 进程接收消息时有概率崩溃
+2. boost::filesystem::status: 拒绝访问。: "C:\network\19660\request\1591190200_18596_6.myread.mywrite"
+
