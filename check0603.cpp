@@ -1,6 +1,6 @@
 /*
 **20200603
-**´ý½â¾ö£º
+**å¾…è§£å†³ï¼š
 */
 
 #include <iostream>
@@ -12,19 +12,19 @@
 
 using namespace std;
 
-string raft_forward;//´æ·ÅÉóºË·¢ËÍ×Ö·û´®
-int state = 0;//Ïòraft´«stringµÄ×´Ì¬±äÁ¿,state=1±íÊ¾Ïòraft´«µÝ×Ö·û´®
+string raft_forward;//å­˜æ”¾å®¡æ ¸å‘é€å­—ç¬¦ä¸²
+int state = 0;//å‘raftä¼ stringçš„çŠ¶æ€å˜é‡,state=1è¡¨ç¤ºå‘raftä¼ é€’å­—ç¬¦ä¸²
 
-int leaderid;//±íÊ¾leaderid£¬ÓÃÓÚ²âÊÔ
+int leaderid;//è¡¨ç¤ºleaderidï¼Œç”¨äºŽæµ‹è¯•
+int Ifsuccess = 0;//ç”¨äºŽåˆ¤æ–­Raftç«¯æ˜¯å¦è¿”å›žæˆåŠŸï¼Œæ­¤å¤„å¯èƒ½ä¼šå¤šæ¬¡æ£€æµ‹å¦‚æžœæ¯æ¬¡æ£€æµ‹éƒ½é‡æ–°å®šä¹‰ä¸€æ¬¡æ•ˆçŽ‡è¾ƒä½Žï¼Œå¤–éƒ¨å®žçŽ°å®šä¹‰éœ€è¦ä¿®æ”¹æ—¶åªéœ€è¦åˆå§‹åŒ–åŽä½¿ç”¨å³å¯
 
-
-std::string Userinfo_to_string(Userinfo userinfo) //½«ÊäÈëµÄÓÃ»§ÐÅÏ¢×ª»»Îª×Ö·û´®Á÷
+std::string Userinfo_to_string(Userinfo userinfo) //å°†è¾“å…¥çš„ç”¨æˆ·ä¿¡æ¯è½¬æ¢ä¸ºå­—ç¬¦ä¸²æµ
 {
 	std::string s_userinfo = userinfo.username + " " + userinfo.password + " " + std::to_string(userinfo.money) + " ";
 	return s_userinfo;
 }
 
-std::string Deal_to_string(Deal deal) //½«ÊäÈëµÄ½»Ò×ÐÅÏ¢×ª»»Îª×Ö·û´®Á÷
+std::string Deal_to_string(Deal deal) //å°†è¾“å…¥çš„äº¤æ˜“ä¿¡æ¯è½¬æ¢ä¸ºå­—ç¬¦ä¸²æµ
 {
 	std::string s_deal = deal.payer + " " + deal.payee + " " + std::to_string(deal.change) + " " + std::to_string(deal.time) + " ";
 	return s_deal;
@@ -46,7 +46,7 @@ void check()
 
 	answer::FeedBack feb_ans(id == leaderid, leaderid);
 	answer::FeedBack *r = &feb_ans;
-	com.sendAnswer(*r, req2->getAddress);//·µ»ØÊÇ·ñÊÇleaderºÍleaderid
+	com.sendAnswer(*r, req2->getAddress);//è¿”å›žæ˜¯å¦æ˜¯leaderå’Œleaderid
 
 	switch (req2->getKind())
 	{
@@ -57,36 +57,17 @@ void check()
 		userinfo.password = req2->getPassword();
 		userinfo.money = Initial_money;
 
-		if (!client.Check_id(userinfo.username))  //¼ìÑéÓÃ»§ÃûÊÇ·ñ´æÔÚ
+		if (!client.Check_id(userinfo.username))  //æ£€éªŒç”¨æˆ·åæ˜¯å¦å­˜åœ¨
 		{
-			raft_forward = Userinfo_to_string(userinfo);//´«½á¹¹
-		
-			state = 1;
-			int Ifsuccess = 0;
+			raft_forward = Userinfo_to_string(userinfo);//ä¼ ç»“æž„
+	
 
-			clock_t start, finish;
-			start = clock();
-			
-			while (1)
-			{
-				if (!state)
-				{
-					Ifsuccess = 1;
-					break;
-				}
-				else
-				{
-					finish = clock();
-					if (finish - start > 100000)//³¬Ê±
-						break;
-					Sleep(1000);
-				}	
-			}
-			
+		 	Ifsuccess = 0;
 
-			if (Ifsuccess)//ÐèÒªraftµÄ·µ»ØÖµ
+			void checkState(int&Ifsuccess);
+			if (Ifsuccess)//éœ€è¦raftçš„è¿”å›žå€¼
 			{
-				answer::RegisterAnswer reg_ans(1);//Ïò¿Í»§¶Ë·¢ËÍAnswer
+				answer::RegisterAnswer reg_ans(1);//å‘å®¢æˆ·ç«¯å‘é€Answer
 				answer::Answer *r = &reg_ans;
 				if (r->hasAttribute(answer::Attribute::RegisterState))
 					com.sendAnswer(*r, req2->getAddress);
@@ -97,7 +78,7 @@ void check()
 				answer::RegisterAnswer reg_ans(0);
 				answer::Answer *r = &reg_ans;
 				if (r->hasAttribute(answer::Attribute::RegisterState))
-					com.sendAnswer(*r, req2->getAddress);//×¢²áÊ§°Ü
+					com.sendAnswer(*r, req2->getAddress);//æ³¨å†Œå¤±è´¥
 			}
 		}
 
@@ -107,7 +88,7 @@ void check()
 			answer::Answer *r = &reg_ans;
 			if (r->hasAttribute(answer::Attribute::RegisterState))
 				com.sendAnswer(*r, req2->getAddress);
-		}//ÓÃ»§ÃûÒÑ´æÔÚ
+		}//ç”¨æˆ·åå·²å­˜åœ¨
 	}
 
 	break;
@@ -117,21 +98,21 @@ void check()
 	{
 		string userid = req2->getUser();
 		string userpassword = req2->getPassword();
-		if (client.Check_id(userid))  //¼ìÑéÓÃ»§ÃûÊÇ·ñ´æÔÚ
+		if (client.Check_id(userid))  //æ£€éªŒç”¨æˆ·åæ˜¯å¦å­˜åœ¨
 		{
-			if (client.Log_in(userid, userpassword)) //·µ»ØÃÜÂëÊÇ·ñÕýÈ·
+			if (client.Log_in(userid, userpassword)) //è¿”å›žå¯†ç æ˜¯å¦æ­£ç¡®
 			{
 				answer::LogInAnswer log_ans(1);
 				answer::Answer *r = &log_ans;
 				if (r->hasAttribute(answer::Attribute::LogInState))
-					com.sendAnswer(*r, req2->getAddress);//µÇÂ½³É¹¦
+					com.sendAnswer(*r, req2->getAddress);//ç™»é™†æˆåŠŸ
 			}
 			else
 			{
 				answer::LogInAnswer log_ans(0);
 				answer::Answer *r = &log_ans;
 				if (r->hasAttribute(answer::Attribute::LogInState))
-					com.sendAnswer(*r, req2->getAddress);//ÃÜÂë´íÎó
+					com.sendAnswer(*r, req2->getAddress);//å¯†ç é”™è¯¯
 			}
 		}
 		else
@@ -139,7 +120,7 @@ void check()
 			answer::LogInAnswer log_ans(2);
 			answer::Answer *r = &log_ans;
 			if (r->hasAttribute(answer::Attribute::LogInState))
-				com.sendAnswer(*r, req2->getAddress);//ÓÃ»§Ãû²»´æÔÚ
+				com.sendAnswer(*r, req2->getAddress);//ç”¨æˆ·åä¸å­˜åœ¨
 		}
 	}
 	break;
@@ -153,48 +134,31 @@ void check()
 		deal.change = req2->getAccount();
 		deal.time = req2->getTransactionDate();
 
-		if (client.Check_id(deal.payer) && client.Check_id(deal.payee))  //¼ìÑéÓÃ»§ÃûÊÇ·ñ´æÔÚ
+		if (client.Check_id(deal.payer) && client.Check_id(deal.payee))  //æ£€éªŒç”¨æˆ·åæ˜¯å¦å­˜åœ¨
 		{
-			if (client.Check_fund(deal.payer, deal.change)) //¼ìÑéÓà¶îÊÇ·ñ³ä×ã
+			if (client.Check_fund(deal.payer, deal.change)) //æ£€éªŒä½™é¢æ˜¯å¦å……è¶³
 			{
-				raft_forward=Deal_to_string(deal);//½»Ò×¼ÇÂ¼´«¸øraft
+				raft_forward=Deal_to_string(deal);//äº¤æ˜“è®°å½•ä¼ ç»™raft
 
-				state = 1;
-				int Ifsuccess = 0;
+				
+				Ifsuccess = 0;
 
-				clock_t start, finish;
-				start = clock();
 
-				while (1)
-				{
-					if (!state)
-					{
-						Ifsuccess = 1;
-						break;
-					}
-					else
-					{
-						finish = clock();
-						if (finish - start > 100000)//³¬Ê±
-							break;
-						Sleep(1000);
-					}
-				}
-
+				checkState(int&Ifsuccess);
 				if (Ifsuccess)
 				{
 					answer::DealAnswer dea_ans(1);
 					answer::Answer *r = &dea_ans;
 					if (r->hasAttribute(answer::Attribute::DealState))
 						com.sendAnswer(*r, req2->getAddress);
-				}//½»Ò×³É¹¦
+				}//äº¤æ˜“æˆåŠŸ
 				else
 				{
 					answer::DealAnswer dea_ans(0);
 					answer::Answer *r = &dea_ans;
 					if (r->hasAttribute(answer::Attribute::DealState))
 						com.sendAnswer(*r, req2->getAddress);
-				}//½»Ò×Ê§°Ü
+				}//äº¤æ˜“å¤±è´¥
 			}
 			else
 			{
@@ -202,7 +166,7 @@ void check()
 				answer::Answer *r = &dea_ans;
 				if (r->hasAttribute(answer::Attribute::DealState))
 					com.sendAnswer(*r, req2->getAddress);
-			}//Óà¶î²»×ã
+			}//ä½™é¢ä¸è¶³
 		}
 		else
 		{
@@ -210,7 +174,7 @@ void check()
 			answer::Answer *r = &dea_ans;
 			if (r->hasAttribute(answer::Attribute::DealState))
 				com.sendAnswer(*r, req2->getAddress);
-		}//ÓÃ»§Ãû²»´æÔÚ
+		}//ç”¨æˆ·åä¸å­˜åœ¨
 	}
 
 	break;
@@ -219,7 +183,7 @@ void check()
 	case request::Kind::BalanceCheck:
 	{
 		string userid = req2->getUser();
-		if (client.Check_id(userid))  //¼ìÑéÓÃ»§ÃûÊÇ·ñ´æÔÚ
+		if (client.Check_id(userid))  //æ£€éªŒç”¨æˆ·åæ˜¯å¦å­˜åœ¨
 		{
 			double balance = client.Get_money(userid);
 			answer::BalanceAnswer bal_ans(balance);
@@ -241,7 +205,7 @@ void check()
 	case request::Kind::RecordCheck:
 	{
 		string userid = req2->getUser();
-		if (client.Check_id(userid))  //¼ìÑéÓÃ»§ÃûÊÇ·ñ´æÔÚ
+		if (client.Check_id(userid))  //æ£€éªŒç”¨æˆ·åæ˜¯å¦å­˜åœ¨
 		{
 			std::string record = client.Get_record(userid, 0, 10);
 			answer::RecordAnswer rec_ans(record);
@@ -258,6 +222,28 @@ void check()
 		}
 	}
 	break;
+	}
+}
+
+void checkState(int&Ifsuccess) {
+	state = 1;
+	clock_t start, finish;
+	start = clock();
+
+	while (1)
+	{
+		if (!state)
+		{
+			Ifsuccess = 1;
+			break;
+		}
+		else
+		{
+			finish = clock();
+			if (finish - start > 100000)//è¶…æ—¶
+				break;
+			Sleep(1000);
+		}
 	}
 }
 
