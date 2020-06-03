@@ -14,7 +14,7 @@ Raft::Raft() :raftTimer(INITIAL_STATE)
 	} while (nodeIdList.size() != nodeTotal);	// wait
 	resetLeaderPara();
 #ifdef DEBUG
-	std::cout << "Hello, I'm Raft-" << nodeId << std::endl;
+	f_out << "Hello, I'm Raft-" << nodeId << std::endl;
 	std::cout << "What a wonderful world!" << std::endl;
 	std::cout << "NodeIdList: ";
 	for (auto i : nodeIdList) {

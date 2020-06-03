@@ -22,6 +22,7 @@
 #include <map>
 #include <queue>
 #include <random>
+#include <atomic>
 
 namespace network
 {

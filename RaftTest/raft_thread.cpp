@@ -49,8 +49,8 @@ void raft_test()
 			is_change_role = raft.acceptVote();
 			if (is_change_role)	break;
 
-			is_change_role = raft.acceptVote_request();
-			if (is_change_role)	break;
+			//is_change_role = raft.acceptVote_request();
+			//if (is_change_role)	break;
 			// append
 			break;
 		case LEADER:

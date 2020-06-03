@@ -146,13 +146,14 @@ namespace network
         std::string TxtNetworkImpl::generateFileName() const
         {
             ostringstream ret;
-            thread_local std::default_random_engine e;
-            thread_local std::uniform_int_distribution<unsigned> u;
+			static std::atomic<unsigned> order = 0;
+            /*thread_local std::default_random_engine e;
+            thread_local std::uniform_int_distribution<unsigned> u;*/
             auto clock = std::chrono::system_clock::now();
             auto time = std::chrono::system_clock::to_time_t(clock);
             ret << time << "_";
-            ret << getMyAddress().string() << "_";;
-            ret << u(e) << "_" << u(e);
+            ret << getMyAddress().string() << "_" << order++;
+            // ret << u(e) << "_" << u(e);
             return ret.str();
         }
     }
