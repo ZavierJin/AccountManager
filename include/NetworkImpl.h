@@ -56,7 +56,7 @@ namespace network
 
     namespace txt
     {
-        const Address network_root = Address("C:\\network");
+        const Address network_root = Address("D:\\network");
 
         class TxtNetworkImpl :public NetworkImpl
         {
@@ -102,7 +102,7 @@ namespace network
         inline bool TxtNetworkImpl::fileCanBeRead(const Address &adr)
         {
             auto filename = adr.string();
-            return !fs::exists(Address(filename + ".mywrite"));
+            return fs::exists(Address(filename + ".canread"));
         }
 
         inline bool TxtNetworkImpl::isServer(const Address &adr)

@@ -56,11 +56,8 @@ namespace network
         bool TxtNetworkImpl::sendMessage(const Message &msg, const Address &adr)
         {
             auto filename = generateFileName();
-            auto filepath = network_root / adr / (filename+".myread");
 
-            // Prevent this file from being read by other files
-            ofstream prevent_file(filepath.string()+".mywrite");
-            prevent_file.close();
+            auto filepath = network_root / adr / (filename+".myread");
 
             // True file to write
             ofstream fout(filepath.string());
@@ -68,7 +65,7 @@ namespace network
             fout.close();
 
             // When completing writing, remove the first file
-            fs::remove(Address(filepath.string()+".mywrite"));
+            ofstream allow_file(filepath.string()+".canread");
             return true;
         }
         Message TxtNetworkImpl::getMessage(const Address &adr)
@@ -78,7 +75,8 @@ namespace network
 
             if (message_addresses[adr].empty() && !fs::is_empty(network_root/adr))
             {
-                //std::unique_lock<std::mutex> lock(_using_iterator);
+                std::unique_lock<std::mutex> lock(_using_iterator);
+
                 fs::directory_iterator dir_iter(network_root / adr), end;
                 // Find readable file
                 std::copy_if(dir_iter,end,std::back_inserter(message_addresses[adr]), [](decltype(*dir_iter) file)
@@ -87,9 +85,7 @@ namespace network
                         return fs::is_regular_file(path) && fileCanBeRead(path);
                     }
                 );
-                //lock.unlock();
             }
-
             Message ret;
             // No message
             if (!message_addresses[adr].empty())
@@ -103,8 +99,13 @@ namespace network
                     ret += temp + "\n";
                 fin.close();
 
+                if (ret == "")
+                    throw std::exception("get");
                 // Delete read file
+                
+                std::unique_lock<std::mutex> lock(_using_iterator);
                 fs::remove(target);
+                fs::remove(target.string() + ".canread");
             }
 
             return ret;
@@ -127,12 +128,13 @@ namespace network
             std::vector<Address> servers;
 
             // find .s file's address
-            //std::unique_lock<std::mutex> lock(_using_iterator);
+            std::unique_lock<std::mutex> lock(_using_iterator);
             fs::directory_iterator dir_iter(network_root), end;
             std::copy_if(dir_iter, end,
                 std::back_inserter(servers),
                 [](decltype(*dir_iter) file) {return isServer(file.path()); });
             //lock.unlock();
+            lock.unlock();
 
             // Get Server address
             std::for_each(servers.begin(), servers.end(), [](Address &adr) {adr = adr.stem(); });
@@ -146,14 +148,9 @@ namespace network
         std::string TxtNetworkImpl::generateFileName() const
         {
             ostringstream ret;
-			static std::atomic<unsigned> order = 0;
-            /*thread_local std::default_random_engine e;
-            thread_local std::uniform_int_distribution<unsigned> u;*/
-            auto clock = std::chrono::system_clock::now();
-            auto time = std::chrono::system_clock::to_time_t(clock);
+            static std::atomic<unsigned> order = 0;
             ret << time << "_";
-            ret << getMyAddress().string() << "_" << order++;
-            // ret << u(e) << "_" << u(e);
+            ret << getMyAddress().string() << "_"<< order++;
             return ret.str();
         }
     }
