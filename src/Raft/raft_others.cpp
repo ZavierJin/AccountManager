@@ -114,16 +114,48 @@ void Raft::writeSaid(const std::string& raft_said)
 	fileWriter << raft_said << std::endl;
 }
 
+void Raft::discardVoteAnswer()
+{
+	auto& com = computer::Computer::instance();
+	// discard the remaining VoteAnswer
+	while (com.hasAnswer(answer::Kind::VoteAnswer)) {
+		auto discard = com.getAnswer(answer::Kind::VoteAnswer);
+#ifdef RAFT_DEBUG
+		writeSaid("Discard the remaining VoteAnswer!!! ");
+#endif // RAFT_DEBUG
+	}
+}
+
+void Raft::discardAdditionAnswer()
+{
+	auto& com = computer::Computer::instance();
+	// discard the remaining AdditionAnswer
+	while (com.hasAnswer(answer::Kind::AdditionAnswer)) {
+		auto discard = com.getAnswer(answer::Kind::AdditionAnswer);
+#ifdef RAFT_DEBUG
+		writeSaid("Discard the remaining AdditionAnswer!!! ");
+#endif // RAFT_DEBUG
+	}
+}
+
 // Interaction with Examiner
 void Raft::receiveExaminer()
 {
 	std::string action;
 #ifdef RAFT_DEBUG
 	static bool has_msg = true;
+	static IndexType pre_index = commitIndex;
+	static long count = 0;
+	if (commitIndex < 4 && pre_index < commitIndex) {
+		count++;
+		if (count > 3000)
+			has_msg = true;
+	}
 #endif // RAFT_DEBUG
 	//bool has_msg = false;
 	if (has_msg) {/* have msg */
 		/* read */
+		count = 0;	// debug
 		has_msg = false;
 		action = "Learning C++ is interesting?";
 		/* add into logs */

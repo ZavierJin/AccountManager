@@ -105,6 +105,9 @@ bool Raft::acceptVote_request()
 	bool is_change_role = false;
 	auto& com = computer::Computer::instance();
 
+	// discard the remaining AdditionAnswer
+	discardAdditionAnswer();
+
 #ifdef RAFT_DEBUG
 	//f_out << "[" << raftTimer.getTrueTime() << "] " << "Try get answer!! " << std::endl;
 #endif // RAFT_DEBUG
@@ -152,13 +155,7 @@ bool Raft::acceptVote_request()
 
 		
 		// discard the remaining VoteAnswer
-		while (com.hasAnswer(answer::Kind::VoteAnswer)) {
-			auto discard = com.getAnswer(answer::Kind::VoteAnswer);
-#ifdef RAFT_DEBUG
-			writeSaid("Discard the remaining VoteAnswer!!! ");
-#endif // RAFT_DEBUG
-		}
-		
+		discardVoteAnswer();
 	}
 	return is_change_role;
 }

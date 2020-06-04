@@ -109,8 +109,19 @@ bool Raft::acceptAppendEntriesReply()
 	AppendEntriesReply	appendEntriesReply;
 	auto& com = computer::Computer::instance();
 
-	auto req = com.getAnswer(answer::Kind::AdditionAnswer);
-	if (req == nullptr)  return false;
+	// discard the remaining VoteAnswer
+	discardVoteAnswer();
+	//writeSaid("Try get apppend answer.");
+
+	// new way to get answer avoid bug
+	std::shared_ptr<answer::Answer> req = nullptr;
+	if (com.hasAnswer(answer::Kind::AdditionAnswer)) {
+		req = com.getAnswer(answer::Kind::AdditionAnswer);
+	}
+	else return false;
+		
+	//auto req = com.getAnswer(answer::Kind::AdditionAnswer);
+	//if (req == nullptr)  return false;
 
 #ifdef RAFT_DEBUG
 	writeSaid("Get apppend answer.");
@@ -142,12 +153,7 @@ bool Raft::acceptAppendEntriesReply()
 #endif // RAFT_DEBUG
 
 			// discard the remaining AdditionAnswer
-			while (com.hasAnswer(answer::Kind::AdditionAnswer)) {
-				auto discard = com.getAnswer(answer::Kind::AdditionAnswer);
-#ifdef RAFT_DEBUG
-				writeSaid("Discard the remaining AdditionAnswer!!! ");
-#endif // RAFT_DEBUG
-			}
+			discardAdditionAnswer();
 		}
 	}
 

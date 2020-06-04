@@ -20,6 +20,7 @@
 **          1. add  beatTimeOut
 **          2. add	writeSaid  &  std::ofstream fileWriter;
 **          3. modify the type of entries
+**          4. add  discardVoteAnswer  &  discardAdditionAnswer
 */
 
 #ifndef RAFT_H
@@ -59,31 +60,38 @@ class Raft
 public:
 	Raft();
 
-	bool acceptAppendEntries();	// 3	// return is_change_role
-	bool acceptAppendEntriesReply(); // leader
-	bool acceptVote(); // 3
-	bool acceptVote_request();	// candidate
+	StateType getState() const { return nodeState; }
 
-	void sendVote();              // only for candidate
-	void sendAppendEntries();     // only for leader
+	// check time
+	bool electionTimeOut();	// return is_change_role
+	bool beatTimeOut();		// return is_time_out
+
+	// manage raft messages, return is_change_role
+	bool acceptAppendEntries();			// 3 state	 
+	bool acceptAppendEntriesReply();	// leader
+	bool acceptVote();					// 3 state	
+	bool acceptVote_request();			// candidate
 		
 	// Interaction with Examiner
 	void receiveExaminer();				
 	void answerExaminer() const;     
-		
+
+private:
+	void sendVote();              // only for candidate
+	void sendAppendEntries();     // only for leader
+
 	// change state or term
 	void changeRole(StateType nowState);
 	void setTerm(TermType new_term);
-	void resetLeaderPara();
 
+	// other
+	void resetLeaderPara();
 	void showMyInfo();
 	void writeSaid(const std::string& raft_said);
+	void discardVoteAnswer();
+	void discardAdditionAnswer();
 
-	// get state
-	bool electionTimeOut();	// return is_time_out(is_change_role)
-	bool beatTimeOut();		// return is_time_out
-	StateType getState() const { return nodeState; }
-private:
+
 	IdType      nodeId = INVALID_ID;		// random number, not increased from 0
 	IdType      leaderId = INVALID_ID;
 	StateType   nodeState = INITIAL_STATE;
@@ -106,6 +114,8 @@ private:
 	std::map<IdType, IndexType> matchIndex;
 
 	std::ofstream fileWriter;
+
+	
 };
 
 #endif
