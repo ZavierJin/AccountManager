@@ -13,7 +13,13 @@
 **          3. add 	LogType  &  INVALID_ID
 **      2020/6/3 (by Jin Zhanyu):
 **          1. add  matchTotal
-**          1. remove some const
+**          2. remove some const
+**          3. add	showMyInfo
+**          4. #include "raft_type.h"
+**      2020/6/4 (by Jin Zhanyu):
+**          1. add  beatTimeOut
+**          2. add	writeSaid  &  std::ofstream fileWriter;
+**          3. modify the type of entries
 */
 
 #ifndef RAFT_H
@@ -31,7 +37,7 @@ struct AppendEntries {
 	IndexType   prevLogIndex;
 	TermType    prevLogTerm;
 	IndexType   leaderCommit;
-	Logs        entries;
+	std::vector<LogType>	entries;
 };
 
 struct AppendEntriesReply {
@@ -53,8 +59,8 @@ class Raft
 public:
 	Raft();
 
-	void acceptAppendEntries();	// 3
-	void acceptAppendEntriesReply(); // leader
+	bool acceptAppendEntries();	// 3	// return is_change_role
+	bool acceptAppendEntriesReply(); // leader
 	bool acceptVote(); // 3
 	bool acceptVote_request();	// candidate
 
@@ -74,7 +80,8 @@ public:
 	void writeSaid(const std::string& raft_said);
 
 	// get state
-	bool electionTimeOut();
+	bool electionTimeOut();	// return is_time_out(is_change_role)
+	bool beatTimeOut();		// return is_time_out
 	StateType getState() const { return nodeState; }
 private:
 	IdType      nodeId = INVALID_ID;		// random number, not increased from 0
@@ -88,7 +95,7 @@ private:
 	IndexType   commitIndex = INITIAL_INDEX;
 	IndexType   lastApplied = INITIAL_INDEX;
 
-	//Logs        logs;		// how to initialize??
+	Logs        logs;		// how to initialize??
 	Timer       raftTimer;
 
 	// Contain all servers' ID

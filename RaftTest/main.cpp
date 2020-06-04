@@ -11,31 +11,34 @@ void raft_test();
 int main()
 {
 	raft_test();
+//	std::string f;
+//	std::cin >> f;
+//	std::ofstream f_out(f);
 //	try {
 //		raft_test();
-//#ifdef DEBUG
+//#ifdef RAFT_DEBUG
 //		f_out << "Why go out of the function??" << std::endl;
 //		while (true)	continue;
-//#endif // DEBUG
+//#endif // RAFT_DEBUG
 //	}
 //	catch (const boost::filesystem::filesystem_error& e) {
-//#ifdef DEBUG
+//#ifdef RAFT_DEBUG
 //		f_out << e.what() << std::endl;
 //		while (true)	continue;
-//#endif // DEBUG
+//#endif // RAFT_DEBUG
 //	}
 //	catch (const std::exception& e){
 //		f_out << e.what() << std::endl;
-//#ifdef DEBUG
+//#ifdef RAFT_DEBUG
 //		f_out << " function??" << std::endl;
 //		while (true)	continue;
-//#endif // DEBUG
+//#endif // RAFT_DEBUG
 //	}
 //	catch (...) {
-//#ifdef DEBUG
+//#ifdef RAFT_DEBUG
 //		f_out << " else ??" << std::endl;
 //		while (true)	continue;
-//#endif // DEBUG
+//#endif // RAFT_DEBUG
 //	}
 
 	return 0;

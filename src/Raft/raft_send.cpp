@@ -17,9 +17,9 @@ void Raft::sendVote()
             continue;
 		request::Vote req(currentTerm, nodeId, commitIndex, lastLogTerm);
 		com.sendRequest(req, rec_id);
-#ifdef SHOW
+#ifdef RAFT_SHOW
 		writeSaid("Send vote to Node_" + std::to_string(rec_id));
-#endif // SHOW
+#endif // RAFT_SHOW
     }
 }
 
@@ -27,7 +27,7 @@ void Raft::sendAppendEntries()
 {
     if(nodeState != LEADER) return;
 
-	//auto& com = computer::Computer::instance();
+	auto& com = computer::Computer::instance();
 	AppendEntries	addition_msg;		// AppendEntries message
 
 	addition_msg.term = currentTerm;
@@ -40,11 +40,9 @@ void Raft::sendAppendEntries()
             continue;
         // Some of the message content sent to each node is different
 		addition_msg.prevLogIndex = nextIndex[rec_id] - 1;
-		addition_msg.prevLogTerm = 1;// logs.getTerm(addition_msg.prevLogIndex);
-        // lastMatch = matchIndex[rec_id];
-		// addition_msg.entries.copyLogs(logs, lastMatch);	// incorrect 
+		addition_msg.prevLogTerm = logs.getTerm(addition_msg.prevLogIndex);
+        // lastMatch = matchIndex[rec_id]; 
         // Send message
-		/*
 		request::Addition req(
 			addition_msg.term,
 			addition_msg.leaderId,
@@ -53,18 +51,12 @@ void Raft::sendAppendEntries()
 			addition_msg.leaderCommit,
 			logs.getBegin(nextIndex[rec_id]),		 
 			logs.getEnd()			
-		);		
-		com.sendRequest(req, rec_id);*/
-#ifdef SHOW
-		writeSaid("Send append entries to" + std::to_string(rec_id));
-#endif // SHOW
+		);
+		com.sendRequest(req, rec_id);
+#ifdef RAFT_SHOW
+		writeSaid("Send append entries to Node_" + std::to_string(rec_id));
+#endif // RAFT_SHOW
     }
-}
-
-void Raft::setTerm(TermType new_term)
-{
-    currentTerm = new_term;
-    votedFor = INVALID_ID;      // reset for new term
 }
 
 

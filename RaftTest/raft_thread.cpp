@@ -6,12 +6,12 @@
 
 void raft_test()
 {
-#ifdef DEBUG
+#ifdef RAFT_DEBUG
 	//std::cout << "press 1 to start" << std::endl;
 	//int start = 0;
 	//std::cin >> start;
 	//while (!start) continue;
-#endif // DEBUG	
+#endif // RAFT_DEBUG	
 
 	Raft raft;
 	int count = 0;	// debug
@@ -27,37 +27,54 @@ void raft_test()
 	{
 		StateType now_state = raft.getState();
 		bool is_change_role = false;
-#ifdef DEBUG
+#ifdef RAFT_DEBUG
 		//f_out << "[ " << count++ << " ]" << std::endl;
-#endif // DEBUG
+#endif // RAFT_DEBUG
 
 		switch (now_state)
 		{
 		case FOLLOWER:	
+			is_change_role = raft.acceptAppendEntries();
+			if (is_change_role)	break;
+
 			is_change_role = raft.electionTimeOut();
-			if(is_change_role)	break;
-				
+			if (is_change_role)	break;
+
 			is_change_role = raft.acceptVote();
 			if (is_change_role)	break;
 
 			// append
 			break;
-		case CANDIDATE:	// the same?
+		case CANDIDATE:	
+			is_change_role = raft.acceptAppendEntries();
+			if (is_change_role)	break;
+
 			is_change_role = raft.electionTimeOut();
-			if(is_change_role)	break;
-				
-			is_change_role = raft.acceptVote();
 			if (is_change_role)	break;
 
 			is_change_role = raft.acceptVote_request();
 			if (is_change_role)	break;
+
+			is_change_role = raft.acceptVote();
+			if (is_change_role)	break;
 			// append
 			break;
 		case LEADER:
-#ifdef DEBUG
-			std::cout << "I'm a Leader now!!!!" << std::endl;
-			while(true)	continue; // hold on
-#endif // DEBUG
+#ifdef RAFT_DEBUG
+			//std::cout << "I'm a Leader now!!!!" << std::endl;
+			//while (true)	continue; // hold on
+#endif // RAFT_DEBUG
+			raft.beatTimeOut();
+			is_change_role = raft.acceptAppendEntriesReply();
+			if (is_change_role)	break;
+
+			is_change_role = raft.acceptAppendEntries();
+			if (is_change_role)	break;
+
+			is_change_role = raft.acceptVote();
+			if (is_change_role)	break;
+
+			raft.receiveExaminer();
 			break;
 		default:
 			break;

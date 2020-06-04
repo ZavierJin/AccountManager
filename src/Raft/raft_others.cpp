@@ -15,7 +15,7 @@ Raft::Raft() :raftTimer(INITIAL_STATE)
 	raftTimer.startCountDown();		// Make sure everyone start at the same time
 	resetLeaderPara();
 	fileWriter.open(std::to_string(nodeId));
-#ifdef SHOW
+#ifdef RAFT_SHOW
 	std::cout << "What a wonderful world!" << std::endl;
 	writeSaid("Hello, I'm Raft-" + std::to_string(nodeId));
 
@@ -24,7 +24,7 @@ Raft::Raft() :raftTimer(INITIAL_STATE)
 		str_node_id_list += std::to_string(i) + " ";
 	}
 	writeSaid(str_node_id_list);
-#endif // SHOW
+#endif // RAFT_SHOW
 }
 
 // other
@@ -54,6 +54,12 @@ void Raft::changeRole(StateType nowState)
 	}
 }
 
+void Raft::setTerm(TermType new_term)
+{
+	currentTerm = new_term;
+	votedFor = INVALID_ID;      // reset for new term
+}
+
 void Raft::resetLeaderPara()
 {
 	for (auto i : nodeIdList) {
@@ -69,16 +75,26 @@ bool Raft::electionTimeOut()
 	if (is_time_out) {
 		setTerm(currentTerm + 1);
 		changeRole(CANDIDATE);
-#ifdef DEBUG
+#ifdef RAFT_DEBUG
 		std::cout << "I'm a Candidate now!!" << std::endl;
-#endif // DEBUG
+#endif // RAFT_DEBUG
+	}
+	return is_time_out;
+}
+
+bool Raft::beatTimeOut()
+{
+	bool is_time_out = raftTimer.Timeout();
+	if (is_time_out) {
+		raftTimer.Reset(LEADER);
+		sendAppendEntries();
 	}
 	return is_time_out;
 }
 
 void Raft::showMyInfo()
 {
-#ifdef SHOW
+#ifdef RAFT_SHOW
 	std::string str_state;
 	switch (nodeState)
 	{
@@ -89,7 +105,7 @@ void Raft::showMyInfo()
 	}
 	writeSaid("I'm a " + str_state + " now, term[" 
 		+ std::to_string(currentTerm) + "]");
-#endif // SHOW
+#endif // RAFT_SHOW
 }
 
 void Raft::writeSaid(const std::string& raft_said)
@@ -101,10 +117,21 @@ void Raft::writeSaid(const std::string& raft_said)
 // Interaction with Examiner
 void Raft::receiveExaminer()
 {
-	// if (/* have msg */) {
+	std::string action;
+#ifdef RAFT_DEBUG
+	static bool has_msg = true;
+#endif // RAFT_DEBUG
+	//bool has_msg = false;
+	if (has_msg) {/* have msg */
 		/* read */
+		has_msg = false;
+		action = "Learning C++ is interesting?";
 		/* add into logs */
-	// }
+		logs.addAction(action, currentTerm);
+#ifdef RAFT_SHOW
+		writeSaid("Receive action from Examiner.");
+#endif // RAFT_SHOW
+	}
 }
 
 void Raft::answerExaminer() const

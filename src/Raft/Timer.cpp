@@ -6,8 +6,9 @@
 #include <ctime>
 #include <cstdlib>
 
-#define minTime 5000		// modify
-#define maxTime 15000
+#define minTime 7000		// modify
+#define maxTime 10000
+#define BeatInterval 500
 
 Timer::Timer(StateType initState) {
     //startTime = clock();
@@ -29,7 +30,7 @@ void Timer::getPeriod() {
     switch (nodeState)
     {
         case LEADER:
-            timePeriod = randomTime/10;
+            timePeriod = BeatInterval;
             break;
         default:
             timePeriod = randomTime;
