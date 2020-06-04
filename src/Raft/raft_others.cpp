@@ -11,17 +11,20 @@ Raft::Raft() :raftTimer(INITIAL_STATE)
 	nodeId = com.registerServer();
 	do {
 		nodeIdList = com.getOnlineServer();
-	} while (nodeIdList.size() != nodeTotal);	// wait
+	} while (nodeIdList.size() != nodeTotal);	// wait until everyone is ready
+	raftTimer.startCountDown();		// Make sure everyone start at the same time
 	resetLeaderPara();
-#ifdef DEBUG
-	f_out << "Hello, I'm Raft-" << nodeId << std::endl;
+	fileWriter.open(std::to_string(nodeId));
+#ifdef SHOW
 	std::cout << "What a wonderful world!" << std::endl;
-	std::cout << "NodeIdList: ";
+	writeSaid("Hello, I'm Raft-" + std::to_string(nodeId));
+
+	std::string str_node_id_list("NodeIdList: ");
 	for (auto i : nodeIdList) {
-		std::cout << i << " ";
+		str_node_id_list += std::to_string(i) + " ";
 	}
-	std::cout << std::endl;
-#endif // DEBUG
+	writeSaid(str_node_id_list);
+#endif // SHOW
 }
 
 // other
@@ -32,17 +35,19 @@ void Raft::changeRole(StateType nowState)
 	{
 	case FOLLOWER:
 		raftTimer.Reset(FOLLOWER);
+		showMyInfo();
 		break;
 	case CANDIDATE:
-		setTerm(currentTerm + 1);
 		votedFor = nodeId;
 		raftTimer.Reset(CANDIDATE);
 		votedTotal = 1;
+		showMyInfo();
 		sendVote();
 		break;
 	case LEADER:
 		resetLeaderPara();
 		raftTimer.Reset(LEADER);
+		showMyInfo();
 		break;
 	default:
 		break;
@@ -59,15 +64,38 @@ void Raft::resetLeaderPara()
 
 bool Raft::electionTimeOut()
 {
-	f_out << "electionTimeOut" << std::endl;
+	//f_out << "[" << raftTimer.getTrueTime() << "] " << "electionTimeOut" << std::endl;
 	bool is_time_out = raftTimer.Timeout();
 	if (is_time_out) {
+		setTerm(currentTerm + 1);
+		changeRole(CANDIDATE);
 #ifdef DEBUG
 		std::cout << "I'm a Candidate now!!" << std::endl;
 #endif // DEBUG
-		changeRole(CANDIDATE);
 	}
 	return is_time_out;
+}
+
+void Raft::showMyInfo()
+{
+#ifdef SHOW
+	std::string str_state;
+	switch (nodeState)
+	{
+	case FOLLOWER:	str_state =  "Follower"; break;
+	case CANDIDATE:	str_state = "Candidate"; break;
+	case LEADER:	str_state = "Leader"; break;
+	default:		str_state = "Stranger"; break;
+	}
+	writeSaid("I'm a " + str_state + " now, term[" 
+		+ std::to_string(currentTerm) + "]");
+#endif // SHOW
+}
+
+void Raft::writeSaid(const std::string& raft_said)
+{
+	fileWriter << "[" << raftTimer.getTrueTime() << "] ";
+	fileWriter << raft_said << std::endl;
 }
 
 // Interaction with Examiner

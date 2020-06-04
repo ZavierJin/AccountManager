@@ -31,7 +31,7 @@ void Raft::acceptAppendEntries()
 	appendEntriesReply.nodeId = nodeId;
 
 	if ((nodeState == CANDIDATE || nodeState == LEADER) && appendEntries.term >= currentTerm) {
-		currentTerm = appendEntries.term;
+		setTerm(appendEntries.term);			// use setTerm
 		appendEntriesReply.term = currentTerm;
 		changeRole(FOLLOWER);
 	}
@@ -106,7 +106,7 @@ void Raft::acceptAppendEntriesReply()
 
 	if (!appendEntriesReply.success) {
 		if (currentTerm < appendEntriesReply.term) {
-			currentTerm = appendEntriesReply.term;
+			setTerm(appendEntriesReply.term);		// use setTerm
 			changeRole(FOLLOWER);
 			return;
 		}

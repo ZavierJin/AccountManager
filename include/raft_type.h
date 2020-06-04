@@ -11,6 +11,7 @@
 #include <vector>
 #include <map>
 #include <memory>
+#include <fstream>
 #include "Computer.h"
 
 typedef enum NodeState {
@@ -30,3 +31,6 @@ typedef std::string LogType;
 
 #define SHOW	1
 #define DEBUG	1
+
+
+

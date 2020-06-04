@@ -18,7 +18,7 @@ void Raft::sendVote()
 		request::Vote req(currentTerm, nodeId, commitIndex, lastLogTerm);
 		com.sendRequest(req, rec_id);
 #ifdef SHOW
-		f_out << "Send vote to " << "Node_" << rec_id << std::endl;
+		writeSaid("Send vote to Node_" + std::to_string(rec_id));
 #endif // SHOW
     }
 }
@@ -55,7 +55,9 @@ void Raft::sendAppendEntries()
 			logs.getEnd()			
 		);		
 		com.sendRequest(req, rec_id);*/
-		f_out << "Send append entries to " << "Node_" << rec_id << std::endl;
+#ifdef SHOW
+		writeSaid("Send append entries to" + std::to_string(rec_id));
+#endif // SHOW
     }
 }
 

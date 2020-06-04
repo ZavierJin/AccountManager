@@ -7,10 +7,10 @@
 void raft_test()
 {
 #ifdef DEBUG
-	std::cout << "press 1 to start" << std::endl;
-	int start = 0;
-	std::cin >> start;
-	while (!start) continue;
+	//std::cout << "press 1 to start" << std::endl;
+	//int start = 0;
+	//std::cin >> start;
+	//while (!start) continue;
 #endif // DEBUG	
 
 	Raft raft;
@@ -49,13 +49,13 @@ void raft_test()
 			is_change_role = raft.acceptVote();
 			if (is_change_role)	break;
 
-			//is_change_role = raft.acceptVote_request();
-			//if (is_change_role)	break;
+			is_change_role = raft.acceptVote_request();
+			if (is_change_role)	break;
 			// append
 			break;
 		case LEADER:
 #ifdef DEBUG
-			f_out << "I'm a Leader now!!!!" << std::endl;
+			std::cout << "I'm a Leader now!!!!" << std::endl;
 			while(true)	continue; // hold on
 #endif // DEBUG
 			break;

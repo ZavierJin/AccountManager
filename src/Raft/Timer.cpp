@@ -10,15 +10,20 @@
 #define maxTime 15000
 
 Timer::Timer(StateType initState) {
-    startTime = clock();
+    //startTime = clock();
+	srand((int)time(0));		// move from getPeriod(), just srand once
     nodeState = initState;
     getPeriod();
+}
+
+void Timer::startCountDown(){
+	startTime = clock();
+	initialTime = clock();
 }
 
 void Timer::getPeriod() {
     clock_t randomTime;
 
-    srand((int)time(0));
     randomTime = rand()% (maxTime-minTime)+minTime;
 
     switch (nodeState)

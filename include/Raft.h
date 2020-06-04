@@ -22,9 +22,7 @@
 #include "Timer.h"
 #include "Logs.h"
 #include "raft_type.h"
-#include <fstream>
 
-extern std::ofstream f_out;
 
 // Message type
 struct AppendEntries {
@@ -72,6 +70,9 @@ public:
 	void setTerm(TermType new_term);
 	void resetLeaderPara();
 
+	void showMyInfo();
+	void writeSaid(const std::string& raft_said);
+
 	// get state
 	bool electionTimeOut();
 	StateType getState() const { return nodeState; }
@@ -96,6 +97,8 @@ private:
 	// only for leader
 	std::map<IdType, IndexType> nextIndex;
 	std::map<IdType, IndexType> matchIndex;
+
+	std::ofstream fileWriter;
 };
 
 #endif
