@@ -1,6 +1,7 @@
 /*  TxtNetworkImpl.cpp
 **  Create by Zhang Zhecheng 2020/5/24
 **  Modify:
+**      1. Fixed an important BUG
 */
 #include "NetworkImpl.h"
 
@@ -12,7 +13,7 @@ namespace network
     }
     namespace txt
     {
-        std::mutex TxtNetworkImpl::_using_iterator;
+        //std::mutex TxtNetworkImpl::_using_iterator;
 
         TxtNetworkImpl::TxtNetworkImpl() :NetworkImpl(generateComputerName())
         {
@@ -37,7 +38,7 @@ namespace network
 
         bool TxtNetworkImpl::addressEmpty(const Address &adr)
         {
-            std::unique_lock<std::mutex> lock(_using_iterator);
+            //std::unique_lock<std::mutex> lock(_using_iterator);
             if (fs::is_empty(network_root / adr))
                 return true;
             fs::directory_iterator dir_iter(network_root / adr);
@@ -55,8 +56,10 @@ namespace network
 
         bool TxtNetworkImpl::sendMessage(const Message &msg, const Address &adr)
         {
-            auto filename = generateFileName();
+            if (!addressExist(adr))
+                return false;
 
+            auto filename = generateFileName();
             auto filepath = network_root / adr / (filename+".myread");
 
             // True file to write
@@ -68,18 +71,20 @@ namespace network
             ofstream allow_file(filepath.string()+".canread");
             return true;
         }
+
         Message TxtNetworkImpl::getMessage(const Address &adr)
         {
             // Reduce duplicate lookups
             thread_local std::map<Address, std::deque<Address>> message_addresses;
+            std::deque<Address> &target_deque = message_addresses[adr];
 
-            if (message_addresses[adr].empty() && !fs::is_empty(network_root/adr))
+            if (target_deque.empty() && !fs::is_empty(network_root/adr))
             {
-                std::unique_lock<std::mutex> lock(_using_iterator);
+                //std::unique_lock<std::mutex> lock(_using_iterator);
 
                 fs::directory_iterator dir_iter(network_root / adr), end;
                 // Find readable file
-                std::copy_if(dir_iter,end,std::back_inserter(message_addresses[adr]), [](decltype(*dir_iter) file)
+                std::copy_if(dir_iter,end,std::back_inserter(target_deque), [](decltype(*dir_iter) file)
                     {
                         auto path = file.path();
                         return fs::is_regular_file(path) && fileCanBeRead(path);
@@ -88,11 +93,12 @@ namespace network
             }
             Message ret;
             // No message
-            if (!message_addresses[adr].empty())
+            if (!target_deque.empty())
             {
                 // Read message from file
-                Address target = message_addresses[adr].front();
-                message_addresses[adr].pop_front();
+                Address target = target_deque.front();
+                target_deque.pop_front();
+
                 ifstream fin(target.string());
                 std::string temp;
                 while (getline(fin, temp))
@@ -103,9 +109,12 @@ namespace network
                     throw std::exception("get");
                 // Delete read file
                 
-                std::unique_lock<std::mutex> lock(_using_iterator);
+                //std::unique_lock<std::mutex> lock(_using_iterator);
                 fs::remove(target);
-                fs::remove(target.string() + ".canread");
+				boost::system::error_code ec;
+                fs::remove(target.string() + ".canread", ec);
+				while( ec.failed() )
+					fs::remove(target.string() + ".canread", ec);
             }
 
             return ret;
@@ -128,13 +137,12 @@ namespace network
             std::vector<Address> servers;
 
             // find .s file's address
-            std::unique_lock<std::mutex> lock(_using_iterator);
+            //std::unique_lock<std::mutex> lock(_using_iterator);
             fs::directory_iterator dir_iter(network_root), end;
             std::copy_if(dir_iter, end,
                 std::back_inserter(servers),
                 [](decltype(*dir_iter) file) {return isServer(file.path()); });
             //lock.unlock();
-            lock.unlock();
 
             // Get Server address
             std::for_each(servers.begin(), servers.end(), [](Address &adr) {adr = adr.stem(); });

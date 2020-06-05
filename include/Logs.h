@@ -23,7 +23,7 @@ public:
 	void deleteLogs(IndexType index);    // index之后都被删除(包括index!!!）
 	std::vector<LogType>::iterator getBegin(IndexType index);
 	std::vector<LogType>::iterator getEnd();
-	IndexType getNewest();
+	IndexType getNewest();			// return index of the last log in logList
 	TermType getTerm(IndexType index);
 	
 	// 末尾添加审核传输的action, 不commit

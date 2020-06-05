@@ -13,41 +13,24 @@
 
 #include "Raft.h"
 
-//using f_out << "[" << raftTimer.getTrueTime() << "] ";
-
-
 bool Raft::acceptVote()
 {
-	//f_out << "[" << raftTimer.getTrueTime() << "] " << "acceptVote" << std::endl;
-	//auto& com = computer::Computer::instance();
-	//auto req = com.getRequest(request::Kind::Vote);//获得request 
-	//if (req == nullptr)  return false;
-	//	//auto req = com.getRequest(request::Kind::Vote);//获得request 
-
-	//f_out << "[" << raftTimer.getTrueTime() << "] " << "Get request!! " << std::endl;
-	//return false;
 	Vote vote;
 	bool voteGranted = false;
 	bool is_change_role = false;
 	TermType my_last_log_term;
 	auto& com = computer::Computer::instance();
 
-#ifdef RAFT_DEBUG
-	//f_out << "[" << raftTimer.getTrueTime() << "] " << "Try get request!! " << std::endl;
-#endif // RAFT_DEBUG
 	auto req = com.getRequest(request::Kind::Vote);//获得request 
 	if (req == nullptr) return false;
 	
-#ifdef RAFT_DEBUG
-	//f_out << "[" << raftTimer.getTrueTime() << "] " << "Get request!! " << std::endl;
-#endif // RAFT_DEBUG
 	vote.term = req->getSenderTerm();//接收各个数据////////////////////
 	vote.candidateId = req->getSenderId();
 	vote.lastLogIndex = req->getSenderLastLogIndex();
 	vote.lastLogTerm = req->getSenderLastLogTerm();
 
-	my_last_log_term = 0;
-	//my_last_log_term = logs.getTerm(logs.getNewest()); //获得最新日志的term/////用函数读////////
+	//my_last_log_term = 0;
+	my_last_log_term = logs.getTerm(logs.getNewest()); //获得最新日志的term/////用函数读////////
 
 	if (vote.term > currentTerm) //收到的任期大于自己的情况
 	{
@@ -65,9 +48,9 @@ bool Raft::acceptVote()
 	}
 
 	if(vote.term < currentTerm                     //否定票情况
-		|| (votedFor != vote.candidateId && votedFor != INVALID_ID))	////////////	
-		//|| vote.lastLogTerm < my_last_log_term
-		//|| vote.lastLogTerm == my_last_log_term && vote.lastLogIndex < commitIndex)
+		|| (votedFor != vote.candidateId && votedFor != INVALID_ID)	////////////	
+		|| vote.lastLogTerm < my_last_log_term
+		|| vote.lastLogTerm == my_last_log_term && vote.lastLogIndex < commitIndex)
 	{
 		voteGranted = false;
 #ifdef RAFT_SHOW
@@ -97,7 +80,6 @@ bool Raft::acceptVote()
 
 bool Raft::acceptVote_request()
 {
-	//f_out << "[" << raftTimer.getTrueTime() << "] " << "acceptVote_request" << std::endl;
 	if (nodeState != CANDIDATE) return false;
 
 	TermType receiver_term = INITIAL_TERM;
@@ -106,18 +88,11 @@ bool Raft::acceptVote_request()
 	auto& com = computer::Computer::instance();
 
 	// discard the remaining AdditionAnswer
-	discardAdditionAnswer();
+	discardAdditionAnswer();	// not necessary
 
-#ifdef RAFT_DEBUG
-	//f_out << "[" << raftTimer.getTrueTime() << "] " << "Try get answer!! " << std::endl;
-#endif // RAFT_DEBUG
-	// getAnswer!!
 	auto req = com.getAnswer(answer::Kind::VoteAnswer);
 	if (req == nullptr)  return false;
-	
-#ifdef RAFT_DEBUG
-	//f_out << "[" << raftTimer.getTrueTime() << "] " << "Get answer!! " << std::endl;
-#endif // RAFT_DEBUG
+
 	voteGranted = req->getAttitude();
 	receiver_term = req->getReceiverTerm();
 
@@ -147,7 +122,7 @@ bool Raft::acceptVote_request()
 		is_change_role = true;
 		changeRole(LEADER);//////转换成leader///////////////////////////////////////////////////////
 		//raftTimer.Reset(LEADER);//更新倒计时////////////////////////////////////////////////////
-		// LeaderID = nodeId; // 需要加一个全局变量 
+		// LeaderID = nodeId; // 需要加一个全局变量	!!!!
 		leaderId = nodeId; // Raft自己的leaderid改变 
 #ifdef RAFT_SHOW
 		writeSaid("Change to leader");
@@ -155,7 +130,7 @@ bool Raft::acceptVote_request()
 
 		
 		// discard the remaining VoteAnswer
-		discardVoteAnswer();
+		discardVoteAnswer();	// not necessary
 	}
 	return is_change_role;
 }

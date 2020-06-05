@@ -56,7 +56,7 @@ namespace network
 
     namespace txt
     {
-        const Address network_root = Address("D:\\network");
+        const Address network_root = Address("C:\\network");
 
         class TxtNetworkImpl :public NetworkImpl
         {
@@ -90,8 +90,8 @@ namespace network
             static bool fileCanBeRead(const Address &adr);
             static Address generateServerName(const Address &adr);
             static bool isServer(const Address &adr);
-        private:
-            static std::mutex _using_iterator;
+        /*private:
+            static std::mutex _using_iterator;*/
         };
 
         inline Address TxtNetworkImpl::generateServerName(const Address &adr)

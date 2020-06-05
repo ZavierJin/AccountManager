@@ -8,7 +8,7 @@
 Raft::Raft() :raftTimer(INITIAL_STATE)
 {
 	auto& com = computer::Computer::instance();
-	nodeId = com.registerServer();
+	nodeId = com.registerServer();			// get nodeId
 	do {
 		nodeIdList = com.getOnlineServer();
 	} while (nodeIdList.size() != nodeTotal);	// wait until everyone is ready
@@ -27,7 +27,7 @@ Raft::Raft() :raftTimer(INITIAL_STATE)
 #endif // RAFT_SHOW
 }
 
-// other
+// change role & reset Timer
 void Raft::changeRole(StateType nowState)
 {
 	nodeState = nowState;
@@ -38,15 +38,15 @@ void Raft::changeRole(StateType nowState)
 		showMyInfo();
 		break;
 	case CANDIDATE:
-		votedFor = nodeId;
 		raftTimer.Reset(CANDIDATE);
-		votedTotal = 1;
+		votedFor = nodeId;
+		votedTotal = 1;		// vote for myself
 		showMyInfo();
-		sendVote();
+		sendVote();			// send vote request
 		break;
 	case LEADER:
-		resetLeaderPara();
 		raftTimer.Reset(LEADER);
+		resetLeaderPara();
 		showMyInfo();
 		break;
 	default:
@@ -54,6 +54,7 @@ void Raft::changeRole(StateType nowState)
 	}
 }
 
+// set term & reset votedFor
 void Raft::setTerm(TermType new_term)
 {
 	currentTerm = new_term;
@@ -70,20 +71,20 @@ void Raft::resetLeaderPara()
 
 bool Raft::electionTimeOut()
 {
-	//f_out << "[" << raftTimer.getTrueTime() << "] " << "electionTimeOut" << std::endl;
+	if (nodeState == LEADER) return false;
+
 	bool is_time_out = raftTimer.Timeout();
 	if (is_time_out) {
 		setTerm(currentTerm + 1);
 		changeRole(CANDIDATE);
-#ifdef RAFT_DEBUG
-		std::cout << "I'm a Candidate now!!" << std::endl;
-#endif // RAFT_DEBUG
 	}
 	return is_time_out;
 }
 
 bool Raft::beatTimeOut()
 {
+	if (nodeState != LEADER) return false;
+
 	bool is_time_out = raftTimer.Timeout();
 	if (is_time_out) {
 		raftTimer.Reset(LEADER);
@@ -98,13 +99,15 @@ void Raft::showMyInfo()
 	std::string str_state;
 	switch (nodeState)
 	{
-	case FOLLOWER:	str_state =  "Follower"; break;
+	case FOLLOWER:	str_state = "Follower"; break;
 	case CANDIDATE:	str_state = "Candidate"; break;
 	case LEADER:	str_state = "Leader"; break;
 	default:		str_state = "Stranger"; break;
 	}
 	writeSaid("I'm a " + str_state + " now, term[" 
 		+ std::to_string(currentTerm) + "]");
+	std::cout << "I'm a " << str_state << " now, term[" 
+		<< currentTerm << "]" << std::endl;
 #endif // RAFT_SHOW
 }
 
@@ -141,6 +144,8 @@ void Raft::discardAdditionAnswer()
 // Interaction with Examiner
 void Raft::receiveExaminer()
 {
+	if (nodeState != LEADER) return;
+
 	std::string action;
 #ifdef RAFT_DEBUG
 	static bool has_msg = true;

@@ -24,25 +24,39 @@ namespace computer
 
     Computer::Cleanup::~Cleanup()
     {
-        std::lock_guard<mutex> guard(Computer::_create_mutex); // make the following code thread safe
         delete Computer::_p_instance;
         Computer::_p_instance = nullptr;
+    }
+
+    Computer::Computer()
+    {
+        _load_answer_thread = std::thread(&Computer::loadAllAnswers, this);
+        _load_request_thread = std::thread(&Computer::loadAllRequests, this);
+        
+        // Wait until background thread starts its processing loop.
+        while (true)
+            if (_answer_thread_started&&_reqest_thread_started)
+                break;
+    }
+    Computer::~Computer()
+    {
+        _thread_exit = false;
+        // Wait until thread is shut down
+        _load_answer_thread.join();
+        _load_request_thread.join();
     }
 
     bool Computer::hasAnswer() const
     {
         unique_lock<mutex> lock(_answer_queue_mutex);          // make the following code thread safe
         // Can't call method in Computer which has lock
-        return  !(_answer_queue.empty() &&           // no unprocessed answer in memory
-                _network.addressEmpty(network::getAnswerAddress(_network.getMyAddress())));
+        return  !_answer_queue.empty();
                                                  // no unprocessed answer in file
     }
 
     bool Computer::hasAnswer(answer::Kind kind)
     {
         unique_lock<mutex> lock(_answer_queue_mutex);          // make the following code thread safe
-
-        loadAllAnswers();
 
         if (_answer_queue.empty())
             return false;
@@ -60,15 +74,11 @@ namespace computer
         unique_lock<mutex> lcok(_request_queue_mutex);  // make the following code thread safe
         // Can't call method in Computer which has lock
 
-        return  !(_request_queue.empty() &&       // no unprocessed request in memory
-                _network.addressEmpty(network::getRequestAddress(_network.getMyAddress())));
-                                              // no unprocessed request in file
+        return  !_request_queue.empty();
     }
     bool Computer::hasRequest(request::Kind kind)
     {
         unique_lock<mutex> lock(_request_queue_mutex);      // make the following code thread safe
-        
-        loadAllRequests();
         
         if (_request_queue.empty())
             return false;
@@ -84,7 +94,7 @@ namespace computer
     request::Kind Computer::getNextRequestKind()
     {
         unique_lock<mutex> lock(_request_queue_mutex);  // make the following code thread safe
-        loadAllRequests();
+ 
         if (_request_queue.empty())
             throw std::runtime_error("No request");
         else
@@ -93,14 +103,10 @@ namespace computer
 
     bool Computer::sendRequest(const Request &req, const Address &adr)
     {
-        unique_lock<mutex> lock(_request_queue_mutex);      // make the following code thread safe
-        // Determine whether the address exists
-        if (!_network.addressExist(adr))
-            return false;
-
         // Fill in the sender
         req.setAddress(_network.getMyAddress());
 
+        unique_lock<mutex> lock(_request_queue_mutex);      // make the following code thread safe
         auto msg = Convert::request2Message(req);
         return _network.sendMessage(msg,network::getRequestAddress(adr));
     }
@@ -136,13 +142,9 @@ namespace computer
 
     bool Computer::sendAnswer(const Answer &ans, const Address &adr)
     {
-        unique_lock<mutex> lock(_answer_queue_mutex);  // make the following code thread safe
-
-        // Determine whether the address exists
-        if (!_network.addressExist(adr))
-            return false;
         ans.setAddress(_network.getMyAddress());
 
+        unique_lock<mutex> lock(_answer_queue_mutex);  // make the following code thread safe
         auto msg = Convert::answer2Message(ans);
         return _network.sendMessage(msg,network::getAnswerAddress(adr));
     }
@@ -152,9 +154,6 @@ namespace computer
         shared_ptr<Request> ret = nullptr;
 
         unique_lock<mutex> guard(_request_queue_mutex);      // make the following code thread safe
-        
-        if (_request_queue.empty())
-            loadAllRequests();
 
         if (!_request_queue.empty())
         {
@@ -170,9 +169,6 @@ namespace computer
         shared_ptr<Request> ret = nullptr;
 
         unique_lock<mutex> lock(_request_queue_mutex);  // make the following code thread safe
-
-        if (_request_queue.empty())
-            loadAllRequests();
 
         // Find if there are requests of the specified type in the queue
         auto target = std::find_if(_request_queue.begin(),
@@ -195,8 +191,6 @@ namespace computer
         shared_ptr<Answer> ret = nullptr;
 
         unique_lock<mutex> lock(_answer_queue_mutex);  // make the following code thread safe
-        if (_answer_queue.empty())
-            loadAllAnswers();
 
         if (!_answer_queue.empty())
         {
@@ -212,9 +206,6 @@ namespace computer
         shared_ptr<Answer> ret = nullptr;
 
         unique_lock<mutex> lock(_answer_queue_mutex);  // make the following code thread safe
-        
-        if (_answer_queue.empty())
-            loadAllAnswers();
 
         // Find if there are answer of the specified type in the queue
         auto target = std::find_if(_answer_queue.begin(),
@@ -276,27 +267,57 @@ namespace computer
             int id;
             is >> id;
             server_ids.push_back(id);
-			is.clear();
-			is.str("");
+            is.clear();
+            is.str("");
         });
         return std::move(server_ids);
     }
 
     void Computer::loadAllRequests()
     {
-        while (!_network.addressEmpty(network::getRequestAddress(_network.getMyAddress())))
+        Address request_address = network::getRequestAddress(_network.getMyAddress());
+        unique_lock<mutex> lock(_request_queue_mutex);
+        _reqest_thread_started = true;
+        lock.unlock();
+        while (true)
         {
-            auto msg = _network.getMessage(network::getRequestAddress(_network.getMyAddress()));
-            _request_queue.push_back(Convert::message2Request(msg));
+            while (true)
+                if (!_network.addressEmpty(request_address))
+                {
+                    auto msg = _network.getMessage(request_address);
+                    lock.lock();
+                    _request_queue.push_back(Convert::message2Request(msg));
+                    lock.unlock();
+                }
+                else
+                    break;
+            if (_thread_exit)
+                break;
         }
     }
 
     void Computer::loadAllAnswers()
     {
-        while (!_network.addressEmpty(network::getAnswerAddress(_network.getMyAddress())))
+        Address answer_address = network::getAnswerAddress(_network.getMyAddress());
+
+        unique_lock<mutex> lock(_answer_queue_mutex);
+        _answer_thread_started = true;
+        lock.unlock();
+
+        while (true)
         {
-            auto msg = _network.getMessage(network::getAnswerAddress(_network.getMyAddress()));
-            _answer_queue.push_back(Convert::message2Answer(msg));
+            while (true)
+                if (!_network.addressEmpty(answer_address))
+                {
+                    auto msg = _network.getMessage(answer_address);
+                    lock.lock();
+                    _answer_queue.push_back(Convert::message2Answer(msg));
+                    lock.unlock();
+                }
+                else
+                    break;
+            if (_thread_exit)
+                break;
         }
     }
 } // namespace computer

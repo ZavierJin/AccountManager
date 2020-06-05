@@ -54,7 +54,8 @@ void Raft::sendAppendEntries()
 		);
 		com.sendRequest(req, rec_id);
 #ifdef RAFT_SHOW
-		writeSaid("Send append entries to Node_" + std::to_string(rec_id));
+		writeSaid("Send append entries to Node_" + std::to_string(rec_id) 
+			+ ", prevLogIndex = " + std::to_string(addition_msg.prevLogIndex));
 #endif // RAFT_SHOW
     }
 }

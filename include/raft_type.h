@@ -33,4 +33,3 @@ typedef std::string LogType;
 #define RAFT_DEBUG	1
 
 
-

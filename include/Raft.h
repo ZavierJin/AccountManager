@@ -74,9 +74,11 @@ public:
 		
 	// Interaction with Examiner
 	void receiveExaminer();				
-	void answerExaminer() const;     
+	void answerExaminer() const;  
+
 
 private:
+	// send msg to other node
 	void sendVote();              // only for candidate
 	void sendAppendEntries();     // only for leader
 
@@ -84,12 +86,16 @@ private:
 	void changeRole(StateType nowState);
 	void setTerm(TermType new_term);
 
-	// other
+	// others
 	void resetLeaderPara();
 	void showMyInfo();
 	void writeSaid(const std::string& raft_said);
 	void discardVoteAnswer();
 	void discardAdditionAnswer();
+
+	// check, used in acceptAppendEntriesReply()
+	void checkMatchIndex();		
+
 
 
 	IdType      nodeId = INVALID_ID;		// random number, not increased from 0
@@ -97,13 +103,13 @@ private:
 	StateType   nodeState = INITIAL_STATE;
 	int         nodeTotal = NODE_TOTAL;
 	int         votedTotal = 0;
-	int			matchTotal = 0;
+	//int			matchTotal = 0;		// Changed to local variable
 	TermType    currentTerm = INITIAL_TERM;
 	IdType      votedFor = INVALID_ID;
 	IndexType   commitIndex = INITIAL_INDEX;
 	IndexType   lastApplied = INITIAL_INDEX;
 
-	Logs        logs;		// how to initialize??
+	Logs        logs;		
 	Timer       raftTimer;
 
 	// Contain all servers' ID
@@ -113,7 +119,8 @@ private:
 	std::map<IdType, IndexType> nextIndex;
 	std::map<IdType, IndexType> matchIndex;
 
-	std::ofstream fileWriter;
+	// record node output
+	std::ofstream fileWriter;		
 
 	
 };

@@ -47,17 +47,25 @@ namespace computer
     **      1. Each program will have only one Computer's instance
     **      2. Multithreading support
     **  Example:
-    **      auto com=computer::instance();
+    **      auto & com = computer::Computer::instance();
+    **
+    **      int server_id=com.registerServer();
+    **      auto servers=com.getOnlineServer();
+    **      while (servers.size()!=required_number)
+    **          servers=com.getOnlineServer();
+    **
     **      Register req("example","passward");
     **      com.sendRequest(req);
     **      auto ans=com.getAnswer();
     **      while (ans==nullptr)
     **          ans=com.getAnswer();    
     **
-    **      auto req2=com.getRequest();
-    **      if (req)
-    **          // deal reqest
-    **      com.sendAnswer(ans, req2->getAddress());
+    **      auto req2=com.getRequest(request::Kind::Addition);
+    **      while (!req2)
+    **          req2=com.getRequest(request::Kind::Addition);
+    **
+    **      AdditonAnswer ans2(...) 
+    **      com.sendAnswer(ans2, req2->getAddress());
     */
     class Computer
     {
@@ -104,7 +112,8 @@ namespace computer
         Address getMyAddress() const { return _network.getMyAddress(); }
 
     protected:
-        Computer() = default;
+        Computer();
+        virtual ~Computer();
 
         Address getRecipient() const;
         void loadAllRequests();
@@ -118,6 +127,12 @@ namespace computer
         int _server_id;
         bool _is_server;
 
+        std::atomic<bool> _answer_thread_started = false;
+        std::atomic<bool> _reqest_thread_started = false;
+        std::atomic<bool> _thread_exit = false;
+        // The background thread
+        std::thread _load_answer_thread;
+        std::thread _load_request_thread;
 
         // Singlon
         static Computer *_p_instance;
