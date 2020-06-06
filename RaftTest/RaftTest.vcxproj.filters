@@ -45,9 +45,6 @@
     <ClInclude Include="..\include\Convert.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\Logs.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\Message.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -67,6 +64,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="..\include\Timer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Logs.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -146,9 +146,6 @@
     <ClCompile Include="..\src\Request\Vote.cpp">
       <Filter>源文件\Request</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\Raft\Logs.cpp">
-      <Filter>源文件\Raft</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\Raft\raft_append.cpp">
       <Filter>源文件\Raft</Filter>
     </ClCompile>
@@ -168,6 +165,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="..\src\Raft\raft_others.cpp">
+      <Filter>源文件\Raft</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Raft\Logs.cpp">
       <Filter>源文件\Raft</Filter>
     </ClCompile>
   </ItemGroup>
