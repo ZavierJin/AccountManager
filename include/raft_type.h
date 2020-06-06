@@ -23,7 +23,7 @@ typedef int IdType;
 typedef int IndexType;
 typedef std::string LogType;
 
-#define NODE_TOTAL 4			// node total
+#define NODE_TOTAL 7			// node total
 #define INITIAL_TERM 0			// initial term
 #define INITIAL_INDEX 0			// initial index, 0 or 1?
 #define INITIAL_STATE FOLLOWER	// initial state
@@ -31,5 +31,5 @@ typedef std::string LogType;
 
 #define RAFT_SHOW	1
 #define RAFT_DEBUG	1
-
+ 
 

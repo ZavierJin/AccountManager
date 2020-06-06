@@ -13,6 +13,8 @@
 **			2. reset election time out
 **      2020/6/5 (by Jin Zhanyu):
 **			1. modify if logic, answer rejection to leader
+**      2020/6/6 (by Jin Zhanyu):
+**			1. delete discardAdditionAnswer();
 */
 #include "Raft.h"
 
@@ -197,7 +199,7 @@ void Raft::checkMatchIndex()
 #endif // RAFT_DEBUG
 
 			// discard the remaining AdditionAnswer
-			discardAdditionAnswer();
+			//discardAdditionAnswer();
 
 			break;	// If the back matches, the front doesn't need to be checked
 		}

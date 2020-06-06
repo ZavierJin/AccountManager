@@ -25,9 +25,9 @@ public:
 	std::vector<LogType>::iterator getEnd();
 	IndexType getNewest();			// return index of the last log in logList
 	TermType getTerm(IndexType index);
-	
+
 	// 末尾添加审核传输的action, 不commit
-	void addAction(const std::string& action, const TermType& new_term); 
+	void addAction(const std::string& action, const TermType& new_term);
 private:
 	std::vector<LogType>	logList;  // Split log and term
 	TermType termTrans(LogType _log);
@@ -35,5 +35,3 @@ private:
 
 
 #endif //RAFT_LOGS_H
-
-
