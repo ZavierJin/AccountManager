@@ -44,6 +44,7 @@ void raft_test()
 
 		case LEADER:
 			raft.beatTimeOut();
+
 			is_change_role = raft.acceptAppendEntriesReply();
 			if (is_change_role)	break;
 

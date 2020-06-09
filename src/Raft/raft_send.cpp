@@ -10,7 +10,7 @@ void Raft::sendVote()
     if(nodeState != CANDIDATE) return;
 
 	auto& com = computer::Computer::instance();
-	TermType lastLogTerm = 0;// logs.getTerm(commitIndex);
+	TermType lastLogTerm = logs.getTerm(commitIndex);
     
     for(auto rec_id : nodeIdList){ // Get each nodeId from nodeIdList 
         if(rec_id == nodeId) // not send to myself 	
