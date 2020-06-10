@@ -30,7 +30,8 @@ public:
     ~Timer();
 #ifdef RANDOM_SLEEP
 	void startSleepCount() { sleep_count_start = clock(); }
-	bool randomSleep() const;	// return need_to_change_role
+	bool randomSleep();	// return had_change_role
+	void setWillSleep() { will_sleep = true; }
 #endif // RANDOM_SLEEP
 	
 private:
@@ -41,6 +42,7 @@ private:
     void getPeriod();
 #ifdef RANDOM_SLEEP
 	clock_t sleep_count_start;
+	bool will_sleep = false;
 #endif // RANDOM_SLEEP
 };
 

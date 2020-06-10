@@ -31,6 +31,6 @@ typedef std::string LogType;
 
 #define RAFT_SHOW	1
 #define RAFT_DEBUG	1
-#define RANDOM_SLEEP 1
+//#define RANDOM_SLEEP 1
  
 

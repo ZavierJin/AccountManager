@@ -60,9 +60,9 @@ bool Raft::acceptAppendEntries()
 	else if (logs.getTerm(appendEntries.prevLogIndex) != appendEntries.prevLogTerm) {
 #ifdef RAFT_SHOW
 		writeSaid("Refuse(2) to append Node_" + std::to_string(appendEntries.leaderId));
-		writeSaid("getTerm: " + std::to_string(logs.getTerm(appendEntries.prevLogIndex)));
-		writeSaid("leader prevLogTerm: " + std::to_string(appendEntries.prevLogTerm));
-		writeSaid("leader prevLogIndex[ " + std::to_string(appendEntries.prevLogIndex));
+		writeSaid("My prevLogTerm = " + std::to_string(logs.getTerm(appendEntries.prevLogIndex)));
+		writeSaid("Leader prevLogTerm = " + std::to_string(appendEntries.prevLogTerm));
+		writeSaid("Leader prevLogIndex = " + std::to_string(appendEntries.prevLogIndex));
 #endif // RAFT_SHOW
 		appendEntriesReply.success = false;
 		appendEntriesReply.term = currentTerm;
@@ -81,6 +81,7 @@ bool Raft::acceptAppendEntries()
 			commitIndex = appendEntries.leaderCommit;             //最新日志中较小的那一个
 #ifdef RAFT_SHOW
 			writeSaid("Update commitIndex[" + std::to_string(commitIndex) + "]");
+			std::cout << "Update commitIndex[" << (commitIndex) << "]" << std::endl;
 #endif // RAFT_SHOW
 		}
 
@@ -114,9 +115,10 @@ bool Raft::acceptAppendEntriesReply()
 
 #ifdef RANDOM_SLEEP
 	if (raftTimer.randomSleep()) {
-		writeSaid("Sleep over! change to Follower.");
-		changeRole(FOLLOWER);
-		return true;
+		//writeSaid("Sleep over! change to Follower.");
+		//changeRole(FOLLOWER);
+		//return true;
+		return false;
 	}
 #endif // RANDOM_SLEEP
 
@@ -200,6 +202,7 @@ void Raft::checkMatchIndex()
 			commitIndex = check_index; 
 #ifdef RAFT_SHOW
 			writeSaid("Update commitIndex[" + std::to_string(commitIndex) + "]");
+			std::cout << "Update commitIndex[" << (commitIndex) << "]" << std::endl;
 #endif // RAFT_SHOW
 			// apply(log[lastapplied - commitIndex]);        //账本未给，测试可注去
 #ifdef RAFT_DEBUG

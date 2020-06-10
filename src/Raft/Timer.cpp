@@ -14,7 +14,7 @@
 #ifdef RANDOM_SLEEP
 	#define SleepTime 15000
 	#define SleepInterval 20000
-	bool had_sleep = false;
+	//bool had_sleep = false;
 #endif // RANDOM_SLEEP
 
 
@@ -66,16 +66,16 @@ bool Timer::Timeout() {
 Timer::~Timer() = default;
 
 #ifdef RANDOM_SLEEP
-bool Timer::randomSleep() const
+bool Timer::randomSleep()
 {
-	bool need_to_change_role = false;
-	if (!had_sleep && (clock() - sleep_count_start) > SleepTime) {
+	bool had_sleep = false;
+	if (will_sleep && (clock() - sleep_count_start) > SleepTime) {
 		had_sleep = true;
 		std::cout << "Start sleep." << std::endl;
 		Sleep(SleepInterval);
 		std::cout << "Start over!!" << std::endl;
-		need_to_change_role = true;
+		startSleepCount();
 	}
-	return need_to_change_role;
+	return had_sleep;
 }
 #endif // RANDOM_SLEEP

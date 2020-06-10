@@ -7,6 +7,16 @@
 
 Raft::Raft() :raftTimer(INITIAL_STATE)
 {
+#ifdef RANDOM_SLEEP
+	////random node for sleep
+	//int flag = 0;
+	//std::cout << "Press 1 for random sleep." << std::endl;
+	//std::cin >> flag;
+	//if (flag == 1) {
+		raftTimer.setWillSleep();
+	//	raftTimer.startSleepCount();
+	//}
+#endif // RANDOM_SLEEP
 	auto& com = computer::Computer::instance();
 	nodeId = com.registerServer();			// get nodeId
 	do {
@@ -119,6 +129,7 @@ void Raft::writeSaid(const std::string& raft_said)
 {
 	fileWriter << "[" << raftTimer.getTrueTime() << "] ";
 	fileWriter << raft_said << std::endl;
+	//std::cout << raft_said << std::endl;
 }
 
 void Raft::discardVoteAnswer()
@@ -128,7 +139,7 @@ void Raft::discardVoteAnswer()
 	while (com.hasAnswer(answer::Kind::VoteAnswer)) {
 		auto discard = com.getAnswer(answer::Kind::VoteAnswer);
 #ifdef RAFT_DEBUG
-		writeSaid("Discard the remaining VoteAnswer!!! ");
+		//writeSaid("Discard the remaining VoteAnswer!!! ");
 #endif // RAFT_DEBUG
 	}
 }
@@ -140,7 +151,7 @@ void Raft::discardAdditionAnswer()
 	while (com.hasAnswer(answer::Kind::AdditionAnswer)) {
 		auto discard = com.getAnswer(answer::Kind::AdditionAnswer);
 #ifdef RAFT_DEBUG
-		writeSaid("Discard the remaining AdditionAnswer!!! ");
+		//writeSaid("Discard the remaining AdditionAnswer!!! ");
 #endif // RAFT_DEBUG
 	}
 }
@@ -155,9 +166,9 @@ void Raft::receiveExaminer()
 	static bool has_msg = true;
 	static IndexType pre_index = commitIndex;
 	static long count = 0;
-	if (commitIndex < 4 && pre_index < commitIndex) {
+	if (commitIndex < 7 && pre_index < commitIndex) {
 		count++;
-		if (count > 3000)
+		if (count > 30000)
 			has_msg = true;
 	}
 #endif // RAFT_DEBUG
@@ -171,6 +182,7 @@ void Raft::receiveExaminer()
 		logs.addAction(action, currentTerm);
 #ifdef RAFT_SHOW
 		writeSaid("Receive action from Examiner.");
+		std::cout << "Receive action from Examiner." << std::endl;
 #endif // RAFT_SHOW
 	}
 }

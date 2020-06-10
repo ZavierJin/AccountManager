@@ -69,7 +69,7 @@ bool Raft::acceptVote()
 	answer::VoteAnswer  ans(currentTerm, voteGranted);
 	com.sendAnswer(ans, req->getAddress());// 给candidateId 发送投票反馈
 #ifdef RAFT_DEBUG
-	writeSaid("Answer vote to Node_" + std::to_string(vote.candidateId));
+	//writeSaid("Answer vote to Node_" + std::to_string(vote.candidateId));
 #endif // RAFT_DEBUG
 
 	return is_change_role;
