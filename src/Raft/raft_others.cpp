@@ -48,6 +48,10 @@ void Raft::changeRole(StateType nowState)
 		raftTimer.Reset(LEADER);
 		resetLeaderPara();
 		showMyInfo();
+#ifdef RANDOM_SLEEP
+		raftTimer.startSleepCount();
+		writeSaid("Start sleep counting.");
+#endif // RANDOM_SLEEP
 		break;
 	default:
 		break;

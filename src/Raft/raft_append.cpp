@@ -112,6 +112,14 @@ bool Raft::acceptAppendEntriesReply()
 {
 	if (nodeState != LEADER) return false;
 
+#ifdef RANDOM_SLEEP
+	if (raftTimer.randomSleep()) {
+		writeSaid("Sleep over! change to Follower.");
+		changeRole(FOLLOWER);
+		return true;
+	}
+#endif // RANDOM_SLEEP
+
 	bool is_change_role = false;
 	AppendEntriesReply	appendEntriesReply;
 	auto& com = computer::Computer::instance();

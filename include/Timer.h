@@ -7,6 +7,9 @@
 **		2020/6/4 (by Jin Zhanyu):
 **          1. add  startCountDown & getTrueTime
 **			2. add	initialTime
+**      2020/6/10 (by Jin Zhanyu):
+**          1. add  randomSleep & startSleepCount
+**          2. add  sleep_count_start
 */
 
 #ifndef RAFT_TIMER_H
@@ -25,13 +28,20 @@ public:
     clock_t getNowTime();
 	clock_t getTrueTime() const { return clock() - initialTime; }	// add
     ~Timer();
-
+#ifdef RANDOM_SLEEP
+	void startSleepCount() { sleep_count_start = clock(); }
+	bool randomSleep() const;	// return need_to_change_role
+#endif // RANDOM_SLEEP
+	
 private:
     StateType nodeState;
 	clock_t initialTime;	// add, for getTrueTime
     clock_t startTime;
     clock_t timePeriod;
     void getPeriod();
+#ifdef RANDOM_SLEEP
+	clock_t sleep_count_start;
+#endif // RANDOM_SLEEP
 };
 
 
