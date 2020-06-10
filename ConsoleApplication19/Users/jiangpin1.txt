@@ -1,0 +1,13 @@
+jiangpin1
+123
+1100
+jiangpin2 jiangpin1 10 1
+jiangpin2 jiangpin1 10 1
+jiangpin2 jiangpin1 10 1
+jiangpin2 jiangpin1 10 1
+jiangpin2 jiangpin1 10 1
+jiangpin2 jiangpin1 10 1
+jiangpin2 jiangpin1 10 1
+jiangpin2 jiangpin1 10 1
+jiangpin2 jiangpin1 10 1
+jiangpin2 jiangpin1 10 1
