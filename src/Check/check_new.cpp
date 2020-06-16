@@ -65,57 +65,57 @@ bool checkState(void) {
 }
 
 
-void test_check() {
-	clock_t start, finish;
-	start = clock();
-	stateWrite_guard(INITIAL);
+// void test_check() {
+// 	clock_t start, finish;
+// 	start = clock();
+// 	stateWrite_guard(INITIAL);
 
-	cout << "Check is initializing" << endl;
-
-	
-	Sleep(100);
+// 	cout << "Check is initializing" << endl;
 
 	
+// 	Sleep(100);
 
 	
-	int i = 0;
-	while (true) {
-		finish = clock();
 
-		if ((finish - start) % 1000 == 0) {
+	
+// 	int i = 0;
+// 	while (true) {
+// 		finish = clock();
 
-			if (i == 0) {
-				std::cout << "Sending messages to Raft" << endl;
-				actionWrite_guard("jiangpin1 123 1000 ");
-				stateWrite_guard(CHECK_TO_RAFT);
+// 		if ((finish - start) % 1000 == 0) {
+
+// 			if (i == 0) {
+// 				std::cout << "Sending messages to Raft" << endl;
+// 				actionWrite_guard("jiangpin1 123 1000 ");
+// 				stateWrite_guard(CHECK_TO_RAFT);
 				
-			}
-			else if (i == 1) {
-				std::cout << "Sending messages to Raft" << endl;
-				actionWrite_guard("jiangpin2 123 1000 ");
-				stateWrite_guard(CHECK_TO_RAFT);
+// 			}
+// 			else if (i == 1) {
+// 				std::cout << "Sending messages to Raft" << endl;
+// 				actionWrite_guard("jiangpin2 123 1000 ");
+// 				stateWrite_guard(CHECK_TO_RAFT);
 				
-			}
-			else {
-				std::cout << "Sending messages to Raft" << endl;
-				actionWrite_guard("jiangpin2 jiangpin1 10 " + std::to_string(i) + " ");
-				stateWrite_guard(CHECK_TO_RAFT);
-			}
+// 			}
+// 			else {
+// 				std::cout << "Sending messages to Raft" << endl;
+// 				actionWrite_guard("jiangpin2 jiangpin1 10 " + std::to_string(i) + " ");
+// 				stateWrite_guard(CHECK_TO_RAFT);
+// 			}
 
-			Sleep(1000);
+// 			Sleep(1000);
 
-			while (stateRead_guard() != RAFT_TO_CHECK) {
-				//std::cout << "check is waiting for raft" << endl;
-				Sleep(100);
-			}
-			stateWrite_guard(RAFT_GET);
-			i++;
-			std::cout << "get the answer from raft" << endl;
+// 			while (stateRead_guard() != RAFT_TO_CHECK) {
+// 				//std::cout << "check is waiting for raft" << endl;
+// 				Sleep(100);
+// 			}
+// 			stateWrite_guard(RAFT_GET);
+// 			i++;
+// 			std::cout << "get the answer from raft" << endl;
 
-		}
+// 		}
 
-	}
-}
+// 	}
+// }
 
 void check_Register() {
 	using namespace std;
@@ -318,204 +318,204 @@ void check_test(){
 
 }
 
-void check()
-{
-	using namespace std;
-	int  id = Global_nodeId;//分开读取？
-	auto &com = computer::Computer::instance();
+// void check()
+// {
+// 	using namespace std;
+// 	int  id = Global_nodeId;//分开读取？
+// 	auto &com = computer::Computer::instance();
 
 	
 
 	
-	while(true){
+// 	while(true){
 
 		
-		while (true){
+// 		while (true){
 
-			auto req2 = com.getRequest(request::Kind::Register);
+// 			auto req2 = com.getRequest(request::Kind::Register);
 			
-		}
+// 		}
 
 
-		auto req2 = com.getRequest();
+// 		auto req2 = com.getRequest();
 
-		answer::FeedBack feb_ans(id == idRead_guard(), idRead_guard());
-		answer::FeedBack *r = &feb_ans;
-		com.sendAnswer(*r, req2->getAddress());//返回是否是leader和Global_leaderId
+// 		answer::FeedBack feb_ans(id == idRead_guard(), idRead_guard());
+// 		answer::FeedBack *r = &feb_ans;
+// 		com.sendAnswer(*r, req2->getAddress());//返回是否是leader和Global_leaderId
 
-		switch (req2->getKind())
-		{
+// 		switch (req2->getKind())
+// 		{
 
-		case request::Kind::Register:
-		{
-			Userinfo userinfo;
-			userinfo.username = req2->getUser();
-			userinfo.password = req2->getPassword();
-			userinfo.money = Initial_money;
+// 		case request::Kind::Register:
+// 		{
+// 			Userinfo userinfo;
+// 			userinfo.username = req2->getUser();
+// 			userinfo.password = req2->getPassword();
+// 			userinfo.money = Initial_money;
 
-			if (!client.Check_id(userinfo.username))  //检验用户名是否存在
-			{
-				//不存在，进行注册
+// 			if (!client.Check_id(userinfo.username))  //检验用户名是否存在
+// 			{
+// 				//不存在，进行注册
 
-				actionWrite_guard(Userinfo_to_string(userinfo));//向raft发出传入消息
+// 				actionWrite_guard(Userinfo_to_string(userinfo));//向raft发出传入消息
 
-				if (checkState())//需要raft的返回值
-				{
-					answer::RegisterAnswer reg_ans(1);//向客户端发送Answer
-					answer::Answer *r = &reg_ans;
-					if (r->hasAttribute(answer::Attribute::RegisterState))
-						com.sendAnswer(*r, req2->getAddress());
-				}
+// 				if (checkState())//需要raft的返回值
+// 				{
+// 					answer::RegisterAnswer reg_ans(1);//向客户端发送Answer
+// 					answer::Answer *r = &reg_ans;
+// 					if (r->hasAttribute(answer::Attribute::RegisterState))
+// 						com.sendAnswer(*r, req2->getAddress());
+// 				}
 
-				else
-				{
-					answer::RegisterAnswer reg_ans(0);
-					answer::Answer *r = &reg_ans;
-					if (r->hasAttribute(answer::Attribute::RegisterState))
-						com.sendAnswer(*r, req2->getAddress());//注册失败
-				}
-			}
+// 				else
+// 				{
+// 					answer::RegisterAnswer reg_ans(0);
+// 					answer::Answer *r = &reg_ans;
+// 					if (r->hasAttribute(answer::Attribute::RegisterState))
+// 						com.sendAnswer(*r, req2->getAddress());//注册失败
+// 				}
+// 			}
 
-			else
-			{
-				answer::RegisterAnswer reg_ans(2);
-				answer::Answer *r = &reg_ans;
-				if (r->hasAttribute(answer::Attribute::RegisterState))
-					com.sendAnswer(*r, req2->getAddress());
-			}//用户名已存在
-		}
+// 			else
+// 			{
+// 				answer::RegisterAnswer reg_ans(2);
+// 				answer::Answer *r = &reg_ans;
+// 				if (r->hasAttribute(answer::Attribute::RegisterState))
+// 					com.sendAnswer(*r, req2->getAddress());
+// 			}//用户名已存在
+// 		}
 
-		break;
-
-
-		case request::Kind::SignIn:
-		{
-			string userid = req2->getUser();
-			string userpassword = req2->getPassword();
-			if (client.Check_id(userid))  //检验用户名是否存在
-			{
-				if (client.Log_in(userid, userpassword)) //返回密码是否正确
-				{
-					answer::LogInAnswer log_ans(1);
-					answer::Answer *r = &log_ans;
-					if (r->hasAttribute(answer::Attribute::LogInState))
-						com.sendAnswer(*r, req2->getAddress());//登陆成功
-				}
-				else
-				{
-					answer::LogInAnswer log_ans(0);
-					answer::Answer *r = &log_ans;
-					if (r->hasAttribute(answer::Attribute::LogInState))
-						com.sendAnswer(*r, req2->getAddress());//密码错误
-				}
-			}
-			else
-			{
-				answer::LogInAnswer log_ans(2);
-				answer::Answer *r = &log_ans;
-				if (r->hasAttribute(answer::Attribute::LogInState))
-					com.sendAnswer(*r, req2->getAddress());//用户名不存在
-			}
-		}
-		break;
+// 		break;
 
 
-		case request::Kind::Deal:
-		{
-			Deal deal;
-			deal.payer = req2->getUser();
-			deal.payee = req2->getAccountCollector();
-			deal.change = req2->getAccount();
-			deal.time = req2->getTransactionDate();
-
-			if (client.Check_id(deal.payer) && client.Check_id(deal.payee))  //检验用户名是否存在
-			{
-				if (client.Check_fund(deal.payer, deal.change)) //检验余额是否充足
-				{
-					actionWrite_guard(Deal_to_string(deal));//交易记录传给raft
-
-
-
-					if (checkState())
-					{
-						answer::DealAnswer dea_ans(1);
-						answer::Answer *r = &dea_ans;
-						if (r->hasAttribute(answer::Attribute::DealState))
-							com.sendAnswer(*r, req2->getAddress());
-					}//交易成功
-					else
-					{
-						answer::DealAnswer dea_ans(0);
-						answer::Answer *r = &dea_ans;
-						if (r->hasAttribute(answer::Attribute::DealState))
-							com.sendAnswer(*r, req2->getAddress());
-					}//交易失败
-				}
-				else
-				{
-					answer::DealAnswer dea_ans(3);
-					answer::Answer *r = &dea_ans;
-					if (r->hasAttribute(answer::Attribute::DealState))
-						com.sendAnswer(*r, req2->getAddress());
-				}//余额不足
-			}
-			else
-			{
-				answer::DealAnswer dea_ans(2);
-				answer::Answer *r = &dea_ans;
-				if (r->hasAttribute(answer::Attribute::DealState))
-					com.sendAnswer(*r, req2->getAddress());
-			}//用户名不存在
-		}
-
-		break;
+// 		case request::Kind::SignIn:
+// 		{
+// 			string userid = req2->getUser();
+// 			string userpassword = req2->getPassword();
+// 			if (client.Check_id(userid))  //检验用户名是否存在
+// 			{
+// 				if (client.Log_in(userid, userpassword)) //返回密码是否正确
+// 				{
+// 					answer::LogInAnswer log_ans(1);
+// 					answer::Answer *r = &log_ans;
+// 					if (r->hasAttribute(answer::Attribute::LogInState))
+// 						com.sendAnswer(*r, req2->getAddress());//登陆成功
+// 				}
+// 				else
+// 				{
+// 					answer::LogInAnswer log_ans(0);
+// 					answer::Answer *r = &log_ans;
+// 					if (r->hasAttribute(answer::Attribute::LogInState))
+// 						com.sendAnswer(*r, req2->getAddress());//密码错误
+// 				}
+// 			}
+// 			else
+// 			{
+// 				answer::LogInAnswer log_ans(2);
+// 				answer::Answer *r = &log_ans;
+// 				if (r->hasAttribute(answer::Attribute::LogInState))
+// 					com.sendAnswer(*r, req2->getAddress());//用户名不存在
+// 			}
+// 		}
+// 		break;
 
 
-		case request::Kind::BalanceCheck:
-		{
-			string userid = req2->getUser();
-			if (client.Check_id(userid))  //检验用户名是否存在
-			{
-				double balance = client.Get_money(userid);
-				answer::BalanceAnswer bal_ans(balance);
-				answer::Answer *r = &bal_ans;
-				if (r->hasAttribute(answer::Attribute::Amount))
-					com.sendAnswer(*r, req2->getAddress());
-			}
-			else
-			{
-				answer::BalanceAnswer bal_ans(-1);
-				answer::Answer *r = &bal_ans;
-				if (r->hasAttribute(answer::Attribute::Amount))
-					com.sendAnswer(*r, req2->getAddress());
-			}
-		}
-		break;
+// 		case request::Kind::Deal:
+// 		{
+// 			Deal deal;
+// 			deal.payer = req2->getUser();
+// 			deal.payee = req2->getAccountCollector();
+// 			deal.change = req2->getAccount();
+// 			deal.time = req2->getTransactionDate();
+
+// 			if (client.Check_id(deal.payer) && client.Check_id(deal.payee))  //检验用户名是否存在
+// 			{
+// 				if (client.Check_fund(deal.payer, deal.change)) //检验余额是否充足
+// 				{
+// 					actionWrite_guard(Deal_to_string(deal));//交易记录传给raft
 
 
-		case request::Kind::RecordCheck:
-		{
-			string userid = req2->getUser();
-			if (client.Check_id(userid))  //检验用户名是否存在
-			{
-				std::string record = client.Get_record(userid, 0, 10);
-				answer::RecordAnswer rec_ans(record);
-				answer::Answer *r = &rec_ans;
-				if (r->hasAttribute(answer::Attribute::TradeRecord))
-					com.sendAnswer(*r, req2->getAddress());
-			}
-			else
-			{
-				answer::RecordAnswer rec_ans("");
-				answer::Answer *r = &rec_ans;
-				if (r->hasAttribute(answer::Attribute::TradeRecord))
-					com.sendAnswer(*r, req2->getAddress());
-			}
-		}
-		break;
-		}
-	}
+
+// 					if (checkState())
+// 					{
+// 						answer::DealAnswer dea_ans(1);
+// 						answer::Answer *r = &dea_ans;
+// 						if (r->hasAttribute(answer::Attribute::DealState))
+// 							com.sendAnswer(*r, req2->getAddress());
+// 					}//交易成功
+// 					else
+// 					{
+// 						answer::DealAnswer dea_ans(0);
+// 						answer::Answer *r = &dea_ans;
+// 						if (r->hasAttribute(answer::Attribute::DealState))
+// 							com.sendAnswer(*r, req2->getAddress());
+// 					}//交易失败
+// 				}
+// 				else
+// 				{
+// 					answer::DealAnswer dea_ans(3);
+// 					answer::Answer *r = &dea_ans;
+// 					if (r->hasAttribute(answer::Attribute::DealState))
+// 						com.sendAnswer(*r, req2->getAddress());
+// 				}//余额不足
+// 			}
+// 			else
+// 			{
+// 				answer::DealAnswer dea_ans(2);
+// 				answer::Answer *r = &dea_ans;
+// 				if (r->hasAttribute(answer::Attribute::DealState))
+// 					com.sendAnswer(*r, req2->getAddress());
+// 			}//用户名不存在
+// 		}
+
+// 		break;
+
+
+// 		case request::Kind::BalanceCheck:
+// 		{
+// 			string userid = req2->getUser();
+// 			if (client.Check_id(userid))  //检验用户名是否存在
+// 			{
+// 				double balance = client.Get_money(userid);
+// 				answer::BalanceAnswer bal_ans(balance);
+// 				answer::Answer *r = &bal_ans;
+// 				if (r->hasAttribute(answer::Attribute::Amount))
+// 					com.sendAnswer(*r, req2->getAddress());
+// 			}
+// 			else
+// 			{
+// 				answer::BalanceAnswer bal_ans(-1);
+// 				answer::Answer *r = &bal_ans;
+// 				if (r->hasAttribute(answer::Attribute::Amount))
+// 					com.sendAnswer(*r, req2->getAddress());
+// 			}
+// 		}
+// 		break;
+
+
+// 		case request::Kind::RecordCheck:
+// 		{
+// 			string userid = req2->getUser();
+// 			if (client.Check_id(userid))  //检验用户名是否存在
+// 			{
+// 				std::string record = client.Get_record(userid, 0, 10);
+// 				answer::RecordAnswer rec_ans(record);
+// 				answer::Answer *r = &rec_ans;
+// 				if (r->hasAttribute(answer::Attribute::TradeRecord))
+// 					com.sendAnswer(*r, req2->getAddress());
+// 			}
+// 			else
+// 			{
+// 				answer::RecordAnswer rec_ans("");
+// 				answer::Answer *r = &rec_ans;
+// 				if (r->hasAttribute(answer::Attribute::TradeRecord))
+// 					com.sendAnswer(*r, req2->getAddress());
+// 			}
+// 		}
+// 		break;
+// 		}
+// 	}
 	
 
-}
+// }
 
